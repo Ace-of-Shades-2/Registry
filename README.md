@@ -20,15 +20,29 @@ The following array of servers is returned from GET requests to the API's `/serv
 ```
 
 ### Posting
-The following payload should be sent by servers to the API's `/servers` endpoint via POST:
+Servers should regularly send their information to the registry, to keep their information up-to-date. The following payload should be sent by servers to the API's `/servers` endpoint via POST:
 ```json
 {
     "port": 1234,
-    "token": "abc123",
     "name": "Andrew's Server",
     "description": "A good server.",
     "maxPlayers": 32,
     "currentPlayers": 2
 }
 ```
-Note that this should only be done at most once per minute. Any more frequent, and you'll receive 429 Too-Many-Requests responses, and continued spam may permanently block your server.
+Note that this should only be done at most once per 30 seconds. Any more frequent, and you'll receive 429 Too-Many-Requests responses, and continued spam may permanently block your server.
+
+All servers **must** provide a token via the `X-AOS2-REGISTRY-TOKEN` header. This token must be valid for the registry to acknowledge the server's requests, or a 401 Unauthorized response is given.
+
+#### On Server Shutdown
+Servers can announce to the registry that they're shutting down, in which case the registry can immediately remove them, instead of waiting a few minutes for the server to time out. Servers should send a POST request to `/servers/shutdown` with the following payload:
+```json
+{
+  "port": 1234
+}
+```
+
+## Development
+This registry is built using Spring-Webflux for a reactive, non-blocking design.
+
+The `ServerRegistry` component is the heart of the system, and contains an internal list of servers, mapped by their unique hostname and port number. The registry periodically removes servers from this list which haven't sent an update for a while. When servers post their information, it overrides any existing information for that server.

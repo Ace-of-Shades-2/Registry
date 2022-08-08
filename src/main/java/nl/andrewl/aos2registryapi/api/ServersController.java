@@ -3,7 +3,7 @@ package nl.andrewl.aos2registryapi.api;
 import nl.andrewl.aos2registryapi.ServerRegistry;
 import nl.andrewl.aos2registryapi.dto.ServerInfoPayload;
 import nl.andrewl.aos2registryapi.dto.ServerInfoResponse;
-import nl.andrewl.aos2registryapi.model.ServerIdentifier;
+import nl.andrewl.aos2registryapi.dto.ServerShutdownPayload;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
@@ -25,12 +25,12 @@ public class ServersController {
 	}
 
 	@PostMapping
-	public Mono<ResponseEntity<Object>> updateServer(ServerHttpRequest req, @RequestBody Mono<ServerInfoPayload> payloadMono) {
-		String host = req.getRemoteAddress().getAddress().getHostAddress();
-		return payloadMono.mapNotNull(payload -> {
-			ServerIdentifier ident = new ServerIdentifier(host, payload.port());
-			serverRegistry.acceptInfo(ident, payload);
-			return ResponseEntity.ok(null);
-		});
+	public Mono<ResponseEntity<Void>> updateServer(ServerHttpRequest req, @RequestBody Mono<ServerInfoPayload> payloadMono) {
+		return serverRegistry.acceptInfo(req, payloadMono);
+	}
+
+	@PostMapping(path = "/shutdown")
+	public Mono<ResponseEntity<Void>> shutdownServer(ServerHttpRequest req, @RequestBody Mono<ServerShutdownPayload> payloadMono) {
+		return serverRegistry.onServerShutdown(req, payloadMono);
 	}
 }
