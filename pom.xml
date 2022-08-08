@@ -57,7 +57,7 @@
 					<image>
 						<builder>paketobuildpacks/builder:tiny</builder>
 						<env>
-							<BP_NATIVE_IMAGE>false</BP_NATIVE_IMAGE>
+							<BP_NATIVE_IMAGE>true</BP_NATIVE_IMAGE>
 						</env>
 					</image>
 				</configuration>
